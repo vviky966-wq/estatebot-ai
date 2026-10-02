@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESTATEBOT - Advanced Buyer, Seller & Rental Real Estate SaaS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' },
+                        emerald: { 500: '#10b981', 600: '#059669' },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glass-card { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .tab-btn.active { background: #4f46e5; color: #ffffff; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .sub-tab.active { background: #10b981; color: #0f172a; font-weight: 700; }
+    </style>
+</head>
+<body class="h-full overflow-hidden flex flex-col bg-slate-950 text-slate-100">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside class="w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col justify-between shrink-0 hidden md:flex">
+            <div>
+                <!-- Brand Header -->
+                <div class="p-5 flex items-center justify-between border-b border-slate-800/60">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-indigo-500/30">
+                            <i class="fa-solid fa-house-chimney-user"></i>
+                        </div>
+                        <div>
+                            <h1 class="font-extrabold text-lg tracking-wide text-white">ESTATE<span class="text-indigo-400">BOT</span></h1>
+                            <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase tracking-wider">v4.0 Multi-Portal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="p-3 space-y-1">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="tab-btn active w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-chart-pie w-5 text-indigo-400"></i> Overview & Metrics
+                    </button>
+                    <button onclick="switchTab('buyers')" id="nav-buyers" class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-user-check w-5 text-cyan-400"></i> Buyer Portal <span class="ml-auto bg-cyan-500/20 text-cyan-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">New</span>
+                    </button>
+                    <button onclick="switchTab('sellers')" id="nav-sellers" class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-house-circle-check w-5 text-amber-400"></i> Seller Suite <span class="ml-auto bg-amber-500/20 text-amber-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">CMA</span>
+                    </button>
+                    <button onclick="switchTab('rentals')" id="nav-rentals" class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-key w-5 text-emerald-400"></i> Rental Hub <span class="ml-auto bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">Lease</span>
+                    </button>
+                    <button onclick="switchTab('messages')" id="nav-messages" class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-comments w-5 text-indigo-400"></i> Omni Messages <span class="ml-auto bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">6</span>
+                    </button>
+                    <button onclick="switchTab('pricing')" id="nav-pricing" class="tab-btn w-full flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-tags w-5 text-purple-400"></i> Plans & Free Trial
+                    </button>
+                </nav>
+            </div>
+
+            <!-- User Profile & Auth Trigger -->
+            <div class="p-4 border-t border-slate-800/80 space-y-3">
+                <div id="sidebar-user-card" class="glass-card p-3 rounded-xl flex items-center justify-between">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                        <div class="w-9 h-9 rounded-full bg-indigo-600/30 text-indigo-300 font-bold flex items-center justify-center text-xs" id="sidebar-avatar">SJ</div>
+                        <div class="overflow-hidden">
+                            <h4 id="sidebar-username" class="text-xs font-semibold truncate text-white">Sarah Jenkins</h4>
+                            <p id="sidebar-role" class="text-[10px] text-emerald-400 truncate">15-Day Trial Active</p>
+                        </div>
+                    </div>
+                    <button onclick="openAuthModal('signin')" class="text-slate-400 hover:text-white text-xs" title="Sign In / Switch Account">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+            
+            <!-- Top Navbar -->
+            <header class="h-16 border-b border-slate-800/80 bg-slate-900/50 backdrop-blur px-6 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-4">
+                    <div class="relative w-64 md:w-80">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-sm"></i>
+                        <input type="text" placeholder="Search buyers, sellers, rentals, or listings..." class="w-full bg-slate-800/60 border border-slate-700/60 rounded-xl pl-9 pr-4 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('messages')" class="relative bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-emerald-400"></i>
+                        <span class="hidden sm:inline">Inquiries</span>
+                        <span class="bg-emerald-500 text-slate-950 text-[10px] font-bold px-1.5 rounded-full">6</span>
+                    </button>
+                    <button onclick="switchTab('pricing')" class="hidden sm:flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-lg shadow-emerald-600/20">
+                        <i class="fa-solid fa-bolt"></i> Claim 15-Day Trial
+                    </button>
+                    <button onclick="openAuthModal('signup')" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-xl transition">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Sign Up
+                    </button>
+                </div>
+            </header>
+
+            <!-- Workspace Dynamic Views -->
+            <div id="tab-content" class="flex-1 overflow-y-auto p-6 space-y-6">
+                
+                <!-- DASHBOARD OVERVIEW -->
+                <div id="view-dashboard" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-cyan-500 cursor-pointer hover:border-cyan-400 transition" onclick="switchTab('buyers')">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Active Buyers</span>
+                                <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-user-check text-base"></i></span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mt-2">142 Leads</h3>
+                            <p class="text-xs text-cyan-400 mt-1">Pre-approved & looking</p>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-amber-500 cursor-pointer hover:border-amber-400 transition" onclick="switchTab('sellers')">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Seller Listings</span>
+                                <span class="p-2 rounded-lg bg-amber-500/10 text-amber-400"><i class="fa-solid fa-house-circle-check text-base"></i></span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mt-2">38 Properties</h3>
+                            <p class="text-xs text-amber-400 mt-1">CMA reports ready</p>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-emerald-500 cursor-pointer hover:border-emerald-400 transition" onclick="switchTab('rentals')">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Rental Units</span>
+                                <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-key text-base"></i></span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mt-2">64 Units</h3>
+                            <p class="text-xs text-emerald-400 mt-1">Screening & deposits active</p>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl border-l-4 border-l-indigo-500 cursor-pointer hover:border-indigo-400 transition" onclick="switchTab('messages')">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Unread Inquiries</span>
+                                <span class="p-2 rounded-lg bg-indigo-500/10 text-indigo-400"><i class="fa-solid fa-comments text-base"></i></span>
+                            </div>
+                            <h3 class="text-2xl font-bold text-white mt-2">6 Messages</h3>
+                            <p class="text-xs text-indigo-400 mt-1">AI auto-responder on</p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Preview Section -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="glass-panel p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-cyan-400"><i class="fa-solid fa-user-check mr-2"></i> Buyer Spotlight</h3>
+                                <button onclick="switchTab('buyers')" class="text-xs text-slate-400 hover:text-white">View All &rarr;</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Michael Vance</h4>
+                                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">$3.5M Budget</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Looking for 4BHK Luxury Villa in Silicon Valley</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Jonathan Blake</h4>
+                                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">$1.5M Pre-approved</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Looking for Modern Downtown Loft</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-amber-400"><i class="fa-solid fa-house-circle-check mr-2"></i> Seller Spotlight</h3>
+                                <button onclick="switchTab('sellers')" class="text-xs text-slate-400 hover:text-white">View All &rarr;</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Robert Sterling</h4>
+                                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">CMA Generated</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Malibu Coast 5BR Villa ($5.2M valuation)</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Samantha Wu</h4>
+                                        <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">Listing Active</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Suburban Townhouse ($850K)</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-6 rounded-2xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-key mr-2"></i> Rental Spotlight</h3>
+                                <button onclick="switchTab('rentals')" class="text-xs text-slate-400 hover:text-white">View All &rarr;</button>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Elena Rostova</h4>
+                                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-semibold">$4,200 / mo</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Screening passed • Lease deposit verified via UPI</p>
+                                </div>
+                                <div class="glass-card p-3 rounded-xl border border-slate-800">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="text-xs font-bold text-white">Marcus Sterling</h4>
+                                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded font-semibold">$2,800 / mo</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Tour scheduled for Silicon Valley 2BHK</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BUYER PORTAL VIEW -->
+                <div id="view-buyers" class="hidden space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-user-check text-cyan-400 mr-2"></i> Buyer Portal & Matchmaker</h2>
+                                <p class="text-xs text-slate-400">Manage buyer requirements, mortgage pre-approvals, and automated listing matches.</p>
+                            </div>
+                            <button onclick="showToast('New buyer lead profile modal opened', 'info')" class="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition">
+                                <i class="fa-solid fa-plus mr-1"></i> Register New Buyer
+                            </button>
+                        </div>
+
+                        <!-- Buyer Filter Tabs -->
+                        <div class="flex gap-2">
+                            <button class="sub-tab active px-3 py-1.5 rounded-lg text-xs">All Buyers (142)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Pre-Approved (98)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Tour Scheduled (32)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Under Contract (12)</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white">Michael Vance</span>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">Pre-Approved $3.5M</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Looking for 4+ Bedroom Villa with Pool in Silicon Valley or Malibu.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-cyan-400 font-semibold">Match Score: 98%</span>
+                                    <button onclick="switchTab('messages'); selectMessage(1);" class="text-indigo-400 hover:underline">Open Chat &rarr;</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white">Jonathan Blake</span>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">Pre-Approved $1.5M</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Looking for Modern Glasshouse Loft or Downtown Penthouse.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-cyan-400 font-semibold">Match Score: 94%</span>
+                                    <button onclick="switchTab('messages'); selectMessage(4);" class="text-indigo-400 hover:underline">Open Chat &rarr;</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-white">Elena Rostova</span>
+                                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-semibold">Cash Buyer $2.0M</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Looking for Investment Property with High Rental Yield.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-cyan-400 font-semibold">Match Score: 91%</span>
+                                    <button onclick="switchTab('messages'); selectMessage(3);" class="text-indigo-400 hover:underline">Open Chat &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SELLER SUITE VIEW -->
+                <div id="view-sellers" class="hidden space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-house-circle-check text-amber-400 mr-2"></i> Seller Suite & CMA Engine</h2>
+                                <p class="text-xs text-slate-400">Manage property listings, generate Comparative Market Analyses (CMA), and coordinate photo shoots.</p>
+                            </div>
+                            <button onclick="showToast('CMA Report Generator initiated', 'success')" class="bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition">
+                                <i class="fa-solid fa-file-invoice-dollar mr-1"></i> Generate New CMA Report
+                            </button>
+                        </div>
+
+                        <!-- Seller Filter Tabs -->
+                        <div class="flex gap-2">
+                            <button class="sub-tab active px-3 py-1.5 rounded-lg text-xs">All Sellers (38)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Active Listings (24)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Pending Appraisal (8)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Closed Sales (6)</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-white">Robert Sterling (Malibu Villa)</h4>
+                                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded font-semibold">$5,200,000 Valuation</span>
+                                </div>
+                                <p class="text-xs text-slate-400">5 Bed • 6 Bath • 5,400 sq.ft. Aerial drone tour completed. Listing active on MLS.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-arrow-trend-up"></i> +8.4% YoY Market Appreciation</span>
+                                    <button onclick="switchTab('messages'); selectMessage(2);" class="text-indigo-400 hover:underline">Seller Inquiry &rarr;</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-white">Samantha Wu (Suburban Townhouse)</h4>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">$850,000 Valuation</span>
+                                </div>
+                                <p class="text-xs text-slate-400">3 Bed • 2.5 Bath • 2,100 sq.ft. Open house scheduled for this coming Sunday.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-eye"></i> 142 Views on MLS Today</span>
+                                    <button onclick="switchTab('messages'); selectMessage(5);" class="text-indigo-400 hover:underline">Seller Inquiry &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RENTAL HUB VIEW -->
+                <div id="view-rentals" class="hidden space-y-6">
+                    <div class="glass-panel p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between flex-wrap gap-3 border-b border-slate-800 pb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-white"><i class="fa-solid fa-key text-emerald-400 mr-2"></i> Rental Management Hub</h2>
+                                <p class="text-xs text-slate-400">Tenant background screening, digital lease agreements, and UPI security deposit tracking.</p>
+                            </div>
+                            <button onclick="showToast('Tenant screening request sent', 'success')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition">
+                                <i class="fa-solid fa-shield-halved mr-1"></i> Run Tenant Screen
+                            </button>
+                        </div>
+
+                        <!-- Rental Filter Tabs -->
+                        <div class="flex gap-2">
+                            <button class="sub-tab active px-3 py-1.5 rounded-lg text-xs">All Units (64)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Available For Rent (18)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Screening Pending (9)</button>
+                            <button class="sub-tab bg-slate-800 text-slate-300 px-3 py-1.5 rounded-lg text-xs hover:bg-slate-700">Lease Active (37)</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-white">Elena Rostova (The Glasshouse Loft)</h4>
+                                    <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-semibold">$4,200 / mo</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Background check verified. Security deposit received via UPI (`9361172035@upi`). Lease active.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-indigo-400 font-semibold"><i class="fa-solid fa-file-contract"></i> Lease ID: #LH-9482</span>
+                                    <button onclick="switchTab('messages'); selectMessage(3);" class="text-indigo-400 hover:underline">Rental Chat &rarr;</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-card p-4 rounded-xl space-y-3 border border-slate-800">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-white">Marcus Sterling (Silicon Valley Unit)</h4>
+                                    <span class="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-semibold">$2,800 / mo</span>
+                                </div>
+                                <p class="text-xs text-slate-400">Tour scheduled for tomorrow. Application documents submitted for review.</p>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
+                                    <span class="text-amber-400 font-semibold"><i class="fa-solid fa-clock"></i> Pending Approval</span>
+                                    <button onclick="switchTab('messages'); selectMessage(6);" class="text-indigo-400 hover:underline">Rental Chat &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MESSAGES & INQUIRIES VIEW -->
+                <div id="view-messages" class="hidden space-y-6">
+                    <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800 flex flex-col lg:flex-row h-[700px]">
+                        
+                        <!-- Left Inbox List -->
+                        <div class="w-full lg:w-96 border-r border-slate-800 flex flex-col bg-slate-900/40">
+                            <div class="p-4 border-b border-slate-800 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-sm font-bold text-white"><i class="fa-solid fa-comments text-indigo-400 mr-2"></i> Omnichannel Inquiries</h3>
+                                    <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-full font-bold">6 Active</span>
+                                </div>
+                                <!-- Category Filter Pills -->
+                                <div class="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-xl text-[11px] font-medium text-slate-400 text-center">
+                                    <button onclick="filterMessages('all')" id="mtab-all" class="sub-tab active py-1.5 rounded-lg transition">All</button>
+                                    <button onclick="filterMessages('buyer')" id="mtab-buyer" class="sub-tab py-1.5 rounded-lg transition">Buyers</button>
+                                    <button onclick="filterMessages('seller')" id="mtab-seller" class="sub-tab py-1.5 rounded-lg transition">Sellers</button>
+                                    <button onclick="filterMessages('rental')" id="mtab-rental" class="sub-tab py-1.5 rounded-lg transition">Rentals</button>
+                                </div>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto divide-y divide-slate-800/60" id="message-list-container">
+                                <!-- Message items injected via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Right Chat Inspection & AI Response Studio -->
+                        <div class="flex-1 flex flex-col bg-slate-950/60">
+                            <div id="active-chat-header" class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/30">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-600/30 text-indigo-300 font-bold flex items-center justify-center text-xs" id="active-chat-avatar">MV</div>
+                                    <div>
+                                        <h4 id="active-chat-name" class="text-xs font-bold text-white">Michael Vance</h4>
+                                        <p id="active-chat-meta" class="text-[10px] text-indigo-400">Buyer • Looking for 4BHK Villa ($3.5M)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span id="active-chat-badge" class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded font-semibold">Hot Lead</span>
+                                    <button onclick="triggerAiAutoReply()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Quick Reply
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Chat Messages Stream -->
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="active-chat-stream">
+                                <!-- Populated dynamically -->
+                            </div>
+
+                            <!-- Message Input Box -->
+                            <div class="p-4 border-t border-slate-800 bg-slate-900/40 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <input id="chat-input-text" type="text" placeholder="Type reply or select AI response template..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                    <button onclick="sendChatMessage()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/20">
+                                        <i class="fa-solid fa-paper-plane mr-1"></i> Send
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2 pt-1 overflow-x-auto text-[11px] text-slate-400">
+                                    <span class="text-slate-500">AI Templates:</span>
+                                    <button onclick="insertTemplate('Tour Confirmation')" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-slate-300 whitespace-nowrap">📅 Confirm Tour</button>
+                                    <button onclick="insertTemplate('Price Negotiation')" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-slate-300 whitespace-nowrap">💰 Send Offer Terms</button>
+                                    <button onclick="insertTemplate('Rental Agreement')" class="bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-slate-300 whitespace-nowrap">📋 Lease Docs</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- PRICING & SUBSCRIPTION PACKAGES -->
+                <div id="view-pricing" class="hidden space-y-6">
+                    <div class="text-center space-y-2 max-w-xl mx-auto">
+                        <span class="text-xs bg-indigo-500/20 text-indigo-400 px-3 py-1 rounded-full border border-indigo-500/30 font-semibold uppercase tracking-wider">Flexible SaaS Packages</span>
+                        <h2 class="text-2xl font-extrabold text-white">Choose the Right Plan for Your Business</h2>
+                        <p class="text-xs text-slate-400">All plans include an automatic 15-day free trial. Cancel anytime. Secure UPI & Card checkout.</p>
+                        
+                        <!-- Billing Toggle -->
+                        <div class="flex items-center justify-center gap-3 pt-2">
+                            <span class="text-xs font-semibold text-slate-300">Monthly Billing</span>
+                            <input type="checkbox" id="annual-toggle" onchange="togglePricingCycle()" class="sr-only">
+                            <label for="annual-toggle" class="cursor-pointer w-10 h-6 bg-slate-800 rounded-full relative transition border border-slate-700 block">
+                                <span id="toggle-circle" class="absolute left-1 top-1 w-4 h-4 bg-indigo-500 rounded-full transition-all"></span>
+                            </label>
+                            <span class="text-xs font-semibold text-slate-300">Annual Billing <span class="text-emerald-400 font-bold">(20% OFF)</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Cards Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4">
+                        
+                        <!-- Starter Plan -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border border-slate-800 hover:border-indigo-500/50 transition">
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-300 uppercase">Starter Agent</h3>
+                                    <div class="mt-2 flex items-baseline gap-1">
+                                        <span class="text-3xl font-extrabold text-white price-starter">₹599</span>
+                                        <span class="text-xs text-slate-400">/month</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Ideal for independent real estate agents getting started.</p>
+                                </div>
+                                <ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Up to 25 Active Listings</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Buyer & Seller Portals</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Standard Messaging Inbox</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> 15-Day Free Trial Included</li>
+                                </ul>
+                            </div>
+                            <button onclick="selectPackage('Starter Agent', '₹599')" class="mt-6 w-full bg-slate-800 hover:bg-indigo-600 text-white font-semibold text-xs py-2.5 rounded-xl transition">
+                                Start 15-Day Free Trial
+                            </button>
+                        </div>
+
+                        <!-- Growth Plan -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border-2 border-indigo-500 relative shadow-xl shadow-indigo-600/10">
+                            <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider">Most Popular</span>
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-indigo-400 uppercase">Growth Pro</h3>
+                                    <div class="mt-2 flex items-baseline gap-1">
+                                        <span class="text-3xl font-extrabold text-white price-growth">₹1,499</span>
+                                        <span class="text-xs text-slate-400">/month</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">For growing teams and professional brokerages.</p>
+                                </div>
+                                <ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Unlimited Buyer & Rental Leads</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> CMA Valuation Reports</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> WhatsApp Auto-Bot Flows</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> 15-Day Free Trial Included</li>
+                                </ul>
+                            </div>
+                            <button onclick="selectPackage('Growth Pro', '₹1,499')" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/30">
+                                Start 15-Day Free Trial
+                            </button>
+                        </div>
+
+                        <!-- Pro Plan -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border border-slate-800 hover:border-indigo-500/50 transition">
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-cyan-400 uppercase">Brokerage Pro</h3>
+                                    <div class="mt-2 flex items-baseline gap-1">
+                                        <span class="text-3xl font-extrabold text-white price-pro">₹2,499</span>
+                                        <span class="text-xs text-slate-400">/month</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Advanced multi-agent team management suite.</p>
+                                </div>
+                                <ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Multi-Agent Permissions</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> MLS RETS Web API Sync</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Tenant Screening & Leases</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Priority Support & Training</li>
+                                </ul>
+                            </div>
+                            <button onclick="selectPackage('Brokerage Pro', '₹2,499')" class="mt-6 w-full bg-slate-800 hover:bg-indigo-600 text-white font-semibold text-xs py-2.5 rounded-xl transition">
+                                Start 15-Day Free Trial
+                            </button>
+                        </div>
+
+                        <!-- Premium Plan -->
+                        <div class="glass-panel p-6 rounded-2xl flex flex-col justify-between border border-slate-800 hover:border-emerald-500/50 transition">
+                            <div class="space-y-4">
+                                <div>
+                                    <h3 class="text-sm font-bold text-emerald-400 uppercase">Enterprise AI</h3>
+                                    <div class="mt-2 flex items-baseline gap-1">
+                                        <span class="text-3xl font-extrabold text-white price-premium">₹4,499</span>
+                                        <span class="text-xs text-slate-400">/month</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">Full-scale corporate platform with custom branding.</p>
+                                </div>
+                                <ul class="space-y-2 text-xs text-slate-300 pt-2 border-t border-slate-800">
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Dedicated Server & Domain</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Custom AI Model Training</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> 24/7 Concierge Support</li>
+                                    <li><i class="fa-solid fa-check text-emerald-400 mr-2"></i> Zero Transaction Fees</li>
+                                </ul>
+                            </div>
+                            <button onclick="selectPackage('Enterprise AI', '₹4,499')" class="mt-6 w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs py-2.5 rounded-xl transition">
+                                Start 15-Day Free Trial
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- AUTH & SIGN MODAL -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 space-y-5 border border-slate-700 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                        <i class="fa-solid fa-lock"></i>
+                    </div>
+                    <h3 id="auth-modal-title" class="text-base font-bold text-white">Sign In to EstateBot</h3>
+                </div>
+                <button onclick="closeAuthModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchAuthTab('signin')" id="auth-tab-signin" class="py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition">Sign In</button>
+                <button onclick="switchAuthTab('signup')" id="auth-tab-signup" class="py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition">Register & Free Trial</button>
+            </div>
+
+            <div class="space-y-3">
+                <div id="field-name-group" class="hidden">
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Full Name / Business Name</label>
+                    <input id="input-auth-name" type="text" placeholder="Sarah Jenkins" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Email Address</label>
+                    <input id="input-auth-email" type="email" placeholder="sarah@realestate.com" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Password</label>
+                    <input id="input-auth-pass" type="password" placeholder="••••••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                </div>
+
+                <div>
+                    <label class="text-xs font-semibold text-slate-300 block mb-1">Account Role / Portal</label>
+                    <select id="input-auth-role" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                        <option value="Agent">Real Estate Agent / Broker</option>
+                        <option value="Buyer">Home Buyer / Investor</option>
+                        <option value="Seller">Property Seller / Owner</option>
+                        <option value="Renter">Tenant / Renter</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="handleAuthSubmit()" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs py-3 rounded-xl transition shadow-lg shadow-indigo-600/30">
+                    Sign In to Dashboard
+                </button>
+            </div>
+
+            <div class="text-center pt-2 border-t border-slate-800">
+                <p class="text-[11px] text-slate-400">Includes automatic <span class="text-emerald-400 font-semibold">15-Day Free Trial</span> access.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPI PAYMENT & CHECKOUT MODAL -->
+    <div id="modal-checkout" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel w-full max-w-md rounded-2xl p-6 space-y-4 border border-slate-700 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white"><i class="fa-solid fa-qrcode text-emerald-400 mr-2"></i> Secure UPI & Card Checkout</h3>
+                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="text-center space-y-2">
+                <span class="text-xs text-slate-400 uppercase tracking-wider">Selected Subscription Plan</span>
+                <h4 id="checkout-plan-title" class="text-lg font-bold text-indigo-400">Growth Pro Plan</h4>
+                <div class="text-2xl font-extrabold text-white" id="checkout-plan-price">₹1,499 / mo</div>
+                <p class="text-[11px] text-emerald-400 font-medium">15-Day Free Trial Active (No charge until trial ends)</p>
+            </div>
+
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center space-y-3">
+                <div class="w-32 h-32 bg-white rounded-xl mx-auto p-2 flex items-center justify-center shadow-md">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=9361172035@upi&pn=ESTATEBOT&am=1499&cu=INR" alt="UPI QR Code" class="w-full h-full object-contain">
+                </div>
+                <div>
+                    <p class="text-xs text-slate-300 font-semibold">Scan with GPay, PhonePe, Paytm, or BHIM</p>
+                    <p class="text-xs font-mono text-indigo-400 mt-1">UPI ID: 9361172035@upi</p>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-xs font-semibold text-slate-300 block mb-1">Enter UTR / Transaction Reference ID</label>
+                <input id="input-utr" type="text" placeholder="428190382109" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono">
+            </div>
+
+            <div class="pt-2">
+                <button onclick="confirmUpiPayment()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-xl transition shadow-lg shadow-emerald-600/30">
+                    Verify Payment & Activate Plan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAnnual = false;
+        let authMode = 'signin';
+        let currentSelectedPlan = 'Growth Pro';
+        let currentPlanPrice = '₹1,499';
+
+        let messages = [
+            { id: 1, type: 'buyer', name: 'Michael Vance', avatar: 'MV', role: 'Buyer', badge: 'Hot Lead', time: '10 mins ago', snippet: 'Hi, I would like to schedule a private tour for the AURA Heights Penthouse this Saturday.', thread: [
+                { sender: 'client', text: 'Hi, I would like to schedule a private tour for the AURA Heights Penthouse this Saturday.', time: '10:15 AM' },
+                { sender: 'ai', text: 'Hello Michael! EstateBot AI here. I can schedule your tour for Saturday at 11:00 AM. Does that work for you?', time: '10:16 AM' }
+            ]},
+            { id: 2, type: 'seller', name: 'Robert Sterling', avatar: 'RS', role: 'Seller', badge: 'Listing Inquiry', time: '42 mins ago', snippet: 'Looking to list my 5-bedroom Malibu villa. What is your commission structure and marketing plan?', thread: [
+                { sender: 'client', text: 'Looking to list my 5-bedroom Malibu villa. What is your commission structure and marketing plan?', time: '9:30 AM' }
+            ]},
+            { id: 3, type: 'rental', name: 'Elena Rostova', avatar: 'ER', role: 'Renter', badge: 'Application Ready', time: '2 hours ago', snippet: 'Submitted my tenant background check and deposit verification for The Glasshouse Loft.', thread: [
+                { sender: 'client', text: 'Submitted my tenant background check and deposit verification for The Glasshouse Loft.', time: '8:12 AM' }
+            ]},
+            { id: 4, type: 'buyer', name: 'Jonathan Blake', avatar: 'JB', role: 'Buyer', badge: 'Pre-Approved', time: '5 hours ago', snippet: 'Got my mortgage pre-approval letter for $1.5M. Let us make an offer on the downtown listing.', thread: [
+                { sender: 'client', text: 'Got my mortgage pre-approval letter for $1.5M. Let us make an offer on the downtown listing.', time: '5:00 AM' }
+            ]},
+            { id: 5, type: 'seller', name: 'Samantha Wu', avatar: 'SW', role: 'Seller', badge: 'Price Review', time: 'Yesterday', snippet: 'Can we review the comparative market analysis (CMA) for my suburban townhouse?', thread: [
+                { sender: 'client', text: 'Can we review the comparative market analysis (CMA) for my suburban townhouse?', time: 'Yesterday' }
+            ]},
+            { id: 6, type: 'rental', name: 'Marcus Sterling', avatar: 'MS', role: 'Renter', badge: 'Tour Requested', time: 'Yesterday', snippet: 'Is the 2BHK rental unit in Silicon Valley available for immediate move-in next month?', thread: [
+                { sender: 'client', text: 'Is the 2BHK rental unit in Silicon Valley available for immediate move-in next month?', time: 'Yesterday' }
+            ]}
+        ];
+
+        let activeMessageId = 1;
+        let currentMessageFilter = 'all';
+
+        window.onload = function() {
+            renderMessages();
+        };
+
+        function switchTab(tabId) {
+            const views = ['dashboard', 'buyers', 'sellers', 'rentals', 'messages', 'pricing'];
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const btn = document.getElementById(`nav-${v}`);
+                if (el) el.classList.add('hidden');
+                if (btn) btn.classList.remove('active');
+            });
+
+            const activeView = document.getElementById(`view-${tabId}`);
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            if (activeView) activeView.classList.remove('hidden');
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function renderMessages() {
+            const listContainer = document.getElementById('message-list-container');
+            if (!listContainer) return;
+
+            const filtered = currentMessageFilter === 'all' 
+                ? messages 
+                : messages.filter(m => m.type === currentMessageFilter);
+
+            listContainer.innerHTML = filtered.map(m => `
+                <div onclick="selectMessage(${m.id})" class="p-3.5 cursor-pointer transition hover:bg-slate-800/60 ${m.id === activeMessageId ? 'bg-slate-800/80 border-l-4 border-indigo-500' : ''}">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-indigo-600/30 text-indigo-300 font-bold flex items-center justify-center text-xs shrink-0">${m.avatar}</div>
+                        <div class="flex-1 overflow-hidden">
+                            <div class="flex items-center justify-between">
+                                <h4 class="text-xs font-bold text-white truncate">${m.name}</h4>
+                                <span class="text-[10px] text-slate-500">${m.time}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 truncate mt-0.5">${m.snippet}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            updateActiveChatView();
+        }
+
+        function filterMessages(type) {
+            currentMessageFilter = type;
+            ['all', 'buyer', 'seller', 'rental'].forEach(t => {
+                const btn = document.getElementById(`mtab-${t}`);
+                if (btn) btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`mtab-${type}`);
+            if (activeBtn) activeBtn.classList.add('active');
+            renderMessages();
+        }
+
+        function selectMessage(id) {
+            activeMessageId = id;
+            renderMessages();
+        }
+
+        function updateActiveChatView() {
+            const msg = messages.find(m => m.id === activeMessageId);
+            if (!msg) return;
+
+            document.getElementById('active-chat-avatar').innerText = msg.avatar;
+            document.getElementById('active-chat-name').innerText = msg.name;
+            document.getElementById('active-chat-meta').innerText = `${msg.role} • ${msg.badge}`;
+            document.getElementById('active-chat-badge').innerText = msg.badge;
+
+            const stream = document.getElementById('active-chat-stream');
+            stream.innerHTML = msg.thread.map(t => `
+                <div class="flex ${t.sender === 'client' ? 'justify-start' : 'justify-end'}">
+                    <div class="max-w-md p-3 rounded-2xl text-xs ${t.sender === 'client' ? 'bg-slate-800 text-slate-200 rounded-bl-none' : 'bg-indigo-600 text-white rounded-br-none'}">
+                        <p>${t.text}</p>
+                        <span class="text-[9px] opacity-75 mt-1 block text-right">${t.time}</span>
+                    </div>
+                </div>
+            `).join('');
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chat-input-text');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const msg = messages.find(m => m.id === activeMessageId);
+            if (msg) {
+                msg.thread.push({ sender: 'agent', text: text, time: 'Just now' });
+                msg.snippet = `You: ${text}`;
+                input.value = '';
+                renderMessages();
+                showToast('Message sent successfully!', 'success');
+            }
+        }
+
+        function triggerAiAutoReply() {
+            const msg = messages.find(m => m.id === activeMessageId);
+            if (!msg) return;
+
+            let reply = "Hello! EstateBot AI verified your inquiry and scheduled the workflow successfully.";
+            if (msg.type === 'buyer') reply = "Hello! EstateBot AI verified your pre-approval status. I have booked your private tour slot for this weekend.";
+            if (msg.type === 'seller') reply = "Hello! EstateBot AI generated your initial CMA valuation report. Our senior broker will review your property details shortly.";
+            if (msg.type === 'rental') reply = "Hello! EstateBot AI pre-screened your rental application and verified security deposit via UPI.";
+
+            msg.thread.push({ sender: 'ai', text: `🤖 [AI Auto-Reply]: ${reply}`, time: 'Just now' });
+            msg.snippet = `AI Auto-Reply sent`;
+            renderMessages();
+            showToast('AI Auto-Responder executed successfully!', 'success');
+        }
+
+        function insertTemplate(templateName) {
+            const input = document.getElementById('chat-input-text');
+            if (templateName === 'Tour Confirmation') input.value = "Hi, your tour has been confirmed for this Saturday at 11:00 AM. Please let us know if you need any adjustments.";
+            if (templateName === 'Price Negotiation') input.value = "Thank you for the offer. We have forwarded the terms to the owner and expect a response within 24 hours.";
+            if (templateName === 'Rental Agreement') input.value = "Please review the attached digital lease agreement and complete the security deposit transfer via UPI.";
+            showToast(`Template '${templateName}' inserted into chat.`, 'info');
+        }
+
+        // Auth Modal Controls
+        function openAuthModal(mode = 'signin') {
+            authMode = mode;
+            document.getElementById('modal-auth').classList.remove('hidden');
+            switchAuthTab(mode);
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        }
+
+        function switchAuthTab(mode) {
+            authMode = mode;
+            const btnIn = document.getElementById('auth-tab-signin');
+            const btnUp = document.getElementById('auth-tab-signup');
+            const nameGroup = document.getElementById('field-name-group');
+            const title = document.getElementById('auth-modal-title');
+            const submitBtn = document.getElementById('auth-submit-btn');
+
+            if (mode === 'signin') {
+                btnIn.className = 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition';
+                btnUp.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition';
+                nameGroup.classList.add('hidden');
+                title.innerText = 'Sign In to EstateBot';
+                submitBtn.innerText = 'Sign In to Dashboard';
+            } else {
+                btnUp.className = 'py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white transition';
+                btnIn.className = 'py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition';
+                nameGroup.classList.remove('hidden');
+                title.innerText = 'Create Account & Start 15-Day Free Trial';
+                submitBtn.innerText = 'Start 15-Day Free Trial';
+            }
+        }
+
+        function handleAuthSubmit() {
+            const email = document.getElementById('input-auth-email').value;
+            const role = document.getElementById('input-auth-role').value;
+            const name = authMode === 'signup' ? document.getElementById('input-auth-name').value || 'New Member' : 'Sarah Jenkins';
+
+            if (!email) {
+                showToast('Please enter a valid email address', 'warning');
+                return;
+            }
+
+            document.getElementById('sidebar-username').innerText = name;
+            document.getElementById('sidebar-role').innerText = `${role} • 15-Day Trial`;
+            document.getElementById('sidebar-avatar').innerText = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+            closeAuthModal();
+            showToast(`Welcome back, ${name}! 15-Day Free Trial active.`, 'success');
+            switchTab('dashboard');
+        }
+
+        // Pricing & Checkout
+        function togglePricingCycle() {
+            isAnnual = !isAnnual;
+            const circle = document.getElementById('toggle-circle');
+            if (isAnnual) {
+                circle.style.transform = 'translateX(16px)';
+                document.querySelector('.price-starter').innerText = '₹479';
+                document.querySelector('.price-growth').innerText = '₹1,199';
+                document.querySelector('.price-pro').innerText = '₹1,999';
+                document.querySelector('.price-premium').innerText = '₹3,599';
+            } else {
+                circle.style.transform = 'translateX(0px)';
+                document.querySelector('.price-starter').innerText = '₹599';
+                document.querySelector('.price-growth').innerText = '₹1,499';
+                document.querySelector('.price-pro').innerText = '₹2,499';
+                document.querySelector('.price-premium').innerText = '₹4,499';
+            }
+        }
+
+        function selectPackage(planName, priceStr) {
+            currentSelectedPlan = planName;
+            currentPlanPrice = priceStr + (isAnnual ? ' /mo (Annual)' : ' /mo');
+            
+            document.getElementById('checkout-plan-title').innerText = planName;
+            document.getElementById('checkout-plan-price').innerText = currentPlanPrice;
+            document.getElementById('modal-checkout').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('modal-checkout').classList.add('hidden');
+        }
+
+        function confirmUpiPayment() {
+            const utr = document.getElementById('input-utr').value;
+            if (!utr || utr.length < 6) {
+                showToast('Please enter a valid UTR transaction reference ID', 'warning');
+                return;
+            }
+
+            closeCheckoutModal();
+            showToast(`Payment reference ${utr} verified! ${currentSelectedPlan} activated with 15-Day Free Trial.`, 'success');
+            switchTab('dashboard');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const bgClass = type === 'success' ? 'bg-emerald-600' : (type === 'warning' ? 'bg-amber-600' : 'bg-indigo-600');
+            toast.className = `${bgClass} text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0`;
+            
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 50);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
